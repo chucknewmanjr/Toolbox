@@ -1,17 +1,31 @@
 -- ============================================================================
 -- the basics
-DECLARE @Vector XML = '<vectors><vector><x>2</x><y>3</y></vector><vector><x>5</x><y>7</y></vector></vectors>'
+DECLARE @Vector XML = '
+<vectors>
+  <vector>
+    <x>2</x>
+    <y>3</y>
+  </vector>
+  <vector>
+    <x>5</x>
+    <y>7</y>
+  </vector>
+</vectors>
+'
 
 SELECT @Vector.query('.')
 -- RETURNS: <vectors><vector><x>2</x><y>3</y></vector><vector><x>5</x><y>7</y></vector></vectors>
 
-SELECT c.query('.') FROM @Vector.nodes('.') t (c) -- same
--- RETURNS: <vectors><vector><x>2</x><y>3</y></vector><vector><x>5</x><y>7</y></vector></vectors>
+SELECT c.query('.') FROM @Vector.nodes('.') t (c) -- Unchanged. A dot makes no change.
 
-SELECT c.query('.') FROM @Vector.nodes('*') t (c) -- same
--- RETURNS: <vectors><vector><x>2</x><y>3</y></vector><vector><x>5</x><y>7</y></vector></vectors>
+SELECT c.query('.') FROM @Vector.nodes('vectors') t (c) -- Unchanged. Vectors is the only tag at the current level. So it returns everything.
 
-SELECT c.query('.') FROM @Vector.nodes('*/*') t (c) -- star means all at the next level
+SELECT c.query('.') FROM @Vector.nodes('*') t (c) -- Unchanged. Nodes-star is the same as nodes('vectors').
+
+SELECT c.query('*') FROM @Vector.nodes('*') t (c) -- Nodes-star matches "vectors". Query-star matches "vector". So it returns everything.
+-- RETURNS: <vector><x>2</x><y>3</y></vector><vector><x>5</x><y>7</y></vector>
+
+SELECT c.query('.') FROM @Vector.nodes('*/*') t (c) -- Nodes-star-star is the same as nodes('vector/vectores')
 -- RETURNS: <vector><x>2</x><y>3</y></vector>
 --          <vector><x>5</x><y>7</y></vector>
 
@@ -75,4 +89,3 @@ select c.value('@type', 'int') from @xml.nodes('x/a') t (c)
 --22
 --33
 go
-
